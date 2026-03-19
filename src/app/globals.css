@@ -2,25 +2,80 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #0f172b;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Floating animations for hero badges */
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes float-medium {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-14px); }
+}
+
+@keyframes float-fast {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+
+.animate-float-1 { animation: float-slow 4s ease-in-out infinite; }
+.animate-float-2 { animation: float-medium 5s ease-in-out 0.5s infinite; }
+.animate-float-3 { animation: float-fast 3.5s ease-in-out 1s infinite; }
+.animate-float-4 { animation: float-slow 4.5s ease-in-out 1.5s infinite; }
+.animate-float-5 { animation: float-medium 3.8s ease-in-out 0.8s infinite; }
+.animate-float-6 { animation: float-fast 5.2s ease-in-out 0.3s infinite; }
+
+/* Fade-in on scroll */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.7s ease-out both;
+}
+
+.animate-fade-in-up-delay-1 { animation: fade-in-up 0.7s ease-out 0.1s both; }
+.animate-fade-in-up-delay-2 { animation: fade-in-up 0.7s ease-out 0.2s both; }
+.animate-fade-in-up-delay-3 { animation: fade-in-up 0.7s ease-out 0.3s both; }
+.animate-fade-in-up-delay-4 { animation: fade-in-up 0.7s ease-out 0.4s both; }
+
+/* Pulse glow for live indicator dots */
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.animate-pulse-dot {
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+/* Brand gradient background */
+.bg-brand-gradient {
+  background-image: linear-gradient(to bottom, #7a9dc2, #96bdd8, #c2d9e8);
+}
+
+/* Scroll offset for anchor links */
+section[id] {
+  scroll-margin-top: 20px;
 }
