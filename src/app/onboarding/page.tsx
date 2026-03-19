@@ -253,6 +253,16 @@ export default function OnboardingPage() {
             if (step < 2) {
               setStep(step + 1)
             } else {
+              // Save preferences to localStorage before navigating to sign-up.
+              // Dashboard reads and persists these after Clerk auth completes.
+              try {
+                localStorage.setItem(
+                  "lot_notte_onboarding",
+                  JSON.stringify({ genres: selectedGenres, ticketCount, notificationPref: notification })
+                )
+              } catch {
+                // Private browsing or quota exceeded — proceed silently
+              }
               router.push("/sign-up")
             }
           }}

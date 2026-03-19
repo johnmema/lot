@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useState } from "react"
 import { useSearchParams } from "next/navigation"
-import { Show, UserButton } from "@clerk/nextjs"
+import { Show, UserButton, useUser } from "@clerk/nextjs"
 import {
   Zap,
   Shield,
@@ -152,18 +152,64 @@ function DashboardContent() {
   const searchParams = useSearchParams()
   const showCredentials = searchParams.get("setup") === "credentials"
   const [data, setData] = useState<DashboardData | null>(null)
+  const [fetchError, setFetchError] = useState(false)
   const [credentialsSaved, setCredentialsSaved] = useState(!showCredentials)
   const [newsletterEmail, setNewsletterEmail] = useState("")
+  const { isLoaded, isSignedIn } = useUser()
+
+  // Persist onboarding preferences saved to localStorage before sign-up
+  useEffect(() => {
+    if (!isLoaded || !isSignedIn) return
+    const raw = localStorage.getItem("lot_notte_onboarding")
+    if (!raw) return
+    try {
+      const prefs = JSON.parse(raw)
+      fetch("/api/onboarding", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(prefs),
+      }).then((res) => {
+        if (res.ok) localStorage.removeItem("lot_notte_onboarding")
+        // If not ok, leave in localStorage so it retries on next load
+      }).catch(() => {
+        // Network error — leave in localStorage for retry
+      })
+    } catch {
+      // Malformed JSON — clear it
+      localStorage.removeItem("lot_notte_onboarding")
+    }
+  }, [isLoaded, isSignedIn])
 
   useEffect(() => {
+    setFetchError(false)
     fetch("/api/dashboard")
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to load")
+        return res.json()
+      })
       .then(setData)
-      .catch(() => {})
+      .catch(() => setFetchError(true))
   }, [credentialsSaved])
 
   const needsSubscription = data && (!data.subscription || data.subscription.status !== "ACTIVE")
   const needsCredentials = data && !data.credentials.hasCredentials && !credentialsSaved
+
+  if (fetchError) {
+    return (
+      <main className="min-h-screen bg-linear-to-b from-[#7a9dc2] via-[#96bdd8] to-[#c2d9e8] flex items-center justify-center">
+        <div className="bg-white/90 backdrop-blur-sm border border-white/60 rounded-2xl p-8 max-w-sm text-center">
+          <p className="text-[#1d293d] font-semibold mb-2">Couldn&apos;t load your dashboard</p>
+          <p className="text-[#90a1b9] text-sm mb-4">Check your connection and try again.</p>
+          <button
+            onClick={() => { setFetchError(false); setCredentialsSaved((v) => !v) }}
+            className="bg-[#0f172b] text-white font-semibold text-sm px-5 py-2.5 rounded-full hover:bg-[#1e293b] transition-colors"
+          >
+            Retry
+          </button>
+        </div>
+      </main>
+    )
+  }
 
   return (
     <main className="min-h-screen bg-linear-to-b from-[#7a9dc2] via-[#96bdd8] to-[#c2d9e8] relative overflow-hidden">
@@ -308,7 +354,7 @@ function DashboardContent() {
                 <div className="bg-white/90 backdrop-blur-sm border border-white/60 rounded-2xl p-10 text-center">
                   <p className="text-[#90a1b9] text-sm">No entries yet.</p>
                   <p className="text-[#90a1b9] text-xs mt-1">
-                    Your first run happens at 9am ET tomorrow.
+                    Your first run is scheduled for tomorrow.
                   </p>
                 </div>
               )}
