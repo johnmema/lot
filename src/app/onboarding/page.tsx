@@ -141,7 +141,7 @@ export default function OnboardingPage() {
                     <button
                       key={genre.id}
                       onClick={() => toggleGenre(genre.id)}
-                      className={`flex items-center gap-3 rounded-[14px] px-[17px] py-3.5 text-left transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] ${
+                      className={`flex items-center gap-3 rounded-[14px] px-[17px] py-3.5 text-left transition-[background-color,transform,opacity] duration-200 hover:scale-[1.02] active:scale-[0.98] ${
                         selected
                           ? "bg-white border-2 border-[#7a9dc2] shadow-sm"
                           : "bg-white/80 border border-white/60 hover:bg-white/90"
@@ -180,7 +180,7 @@ export default function OnboardingPage() {
                   <button
                     key={count}
                     onClick={() => setTicketCount(count)}
-                    className={`w-[152px] h-[134px] rounded-2xl flex flex-col items-center justify-center gap-2 transition-all duration-200 hover:scale-[1.03] active:scale-[0.97] ${
+                    className={`w-[152px] h-[134px] rounded-2xl flex flex-col items-center justify-center gap-2 transition-[background-color,transform,opacity] duration-200 hover:scale-[1.03] active:scale-[0.97] ${
                       ticketCount === count
                         ? "bg-white border border-white shadow-[0px_1px_3px_0px_rgba(0,0,0,0.1),0px_1px_2px_0px_rgba(0,0,0,0.06)]"
                         : "bg-white/80 border border-white/60 hover:bg-white/90"
@@ -220,7 +220,7 @@ export default function OnboardingPage() {
                     <button
                       key={opt.id}
                       onClick={() => setNotification(opt.id)}
-                      className={`flex items-center gap-4 rounded-[14px] px-5 py-4 text-left transition-all duration-200 hover:scale-[1.01] active:scale-[0.99] ${
+                      className={`flex items-center gap-4 rounded-[14px] px-5 py-4 text-left transition-[background-color,transform,opacity] duration-200 hover:scale-[1.01] active:scale-[0.99] ${
                         selected
                           ? "bg-white border-2 border-[#7a9dc2] shadow-sm"
                           : "bg-white/80 border border-white/60 hover:bg-white/90"
@@ -267,7 +267,7 @@ export default function OnboardingPage() {
             }
           }}
           disabled={!canContinue}
-          className={`flex items-center gap-2 font-semibold text-sm px-6 py-3 rounded-full transition-all duration-200 ${
+          className={`flex items-center gap-2 font-semibold text-sm px-6 py-3 rounded-full transition-[background-color,transform,opacity] duration-200 ${
             canContinue
               ? "bg-white text-[#0f172b] shadow-[0px_1px_3px_0px_rgba(0,0,0,0.1),0px_1px_2px_0px_rgba(0,0,0,0.06)] hover:bg-white/95 hover:scale-[1.03] active:scale-[0.97]"
               : "bg-white/15 text-white/35 cursor-not-allowed"

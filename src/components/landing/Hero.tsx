@@ -57,12 +57,12 @@ export function Hero() {
             <div className="animate-fade-in-up-delay-3 flex flex-wrap gap-3 mb-10">
               <Link
                 href="/onboarding"
-                className="flex items-center gap-2 bg-white text-[#0f172b] font-semibold text-sm px-6 py-3 rounded-full hover:bg-white/90 hover:scale-[1.03] active:scale-[0.98] transition-all duration-200"
+                className="flex items-center gap-2 bg-white text-[#0f172b] font-semibold text-sm px-6 py-3 rounded-full hover:bg-white/90 hover:scale-[1.03] active:scale-[0.98] transition-[background-color,transform,opacity] duration-200"
               >
                 Start entering
                 <ArrowRight size={15} />
               </Link>
-              <button className="flex items-center gap-2 bg-white/15 border border-white/20 text-white font-medium text-sm px-6 py-3 rounded-full hover:bg-white/20 hover:scale-[1.03] active:scale-[0.98] transition-all duration-200">
+              <button className="flex items-center gap-2 bg-white/15 border border-white/20 text-white font-medium text-sm px-6 py-3 rounded-full hover:bg-white/20 hover:scale-[1.03] active:scale-[0.98] transition-[background-color,transform,opacity] duration-200">
                 <Play size={13} />
                 How it works
               </button>

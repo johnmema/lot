@@ -51,14 +51,14 @@ export function Navbar() {
             <NavLink
               key={item}
               href={`#${item.toLowerCase()}`}
-              className="px-4 py-1.5 text-sm text-white/80 hover:text-white rounded-full hover:bg-white/10 transition-all duration-200"
+              className="px-4 py-1.5 text-sm text-white/80 hover:text-white rounded-full hover:bg-white/10 transition-[background-color,transform,opacity] duration-200"
             >
               {item}
             </NavLink>
           ))}
           <Link
             href="/pricing"
-            className="px-4 py-1.5 text-sm text-white/80 hover:text-white rounded-full hover:bg-white/10 transition-all duration-200"
+            className="px-4 py-1.5 text-sm text-white/80 hover:text-white rounded-full hover:bg-white/10 transition-[background-color,transform,opacity] duration-200"
           >
             Pricing
           </Link>
@@ -69,7 +69,7 @@ export function Navbar() {
           <Show when="signed-in">
             <Link
               href="/dashboard"
-              className="bg-white text-[#0f172b] font-semibold text-sm px-5 py-2 rounded-full hover:bg-white/90 hover:scale-[1.03] active:scale-[0.98] transition-all duration-200"
+              className="bg-white text-[#0f172b] font-semibold text-sm px-5 py-2 rounded-full hover:bg-white/90 hover:scale-[1.03] active:scale-[0.98] transition-[background-color,transform,opacity] duration-200"
             >
               Dashboard
             </Link>
@@ -78,7 +78,7 @@ export function Navbar() {
           <Show when="signed-out">
             <Link
               href="/onboarding"
-              className="bg-white text-[#0f172b] font-semibold text-sm px-5 py-2 rounded-full hover:bg-white/90 hover:scale-[1.03] active:scale-[0.98] transition-all duration-200"
+              className="bg-white text-[#0f172b] font-semibold text-sm px-5 py-2 rounded-full hover:bg-white/90 hover:scale-[1.03] active:scale-[0.98] transition-[background-color,transform,opacity] duration-200"
             >
               Get started
             </Link>

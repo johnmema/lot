@@ -66,7 +66,7 @@ export default function PricingPage() {
           <button
             onClick={handleSubscribe}
             disabled={loading}
-            className="w-full flex items-center justify-center gap-2 bg-[#0f172b] text-white font-semibold text-sm px-6 py-3.5 rounded-full hover:bg-[#1e293b] hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 disabled:opacity-50"
+            className="w-full flex items-center justify-center gap-2 bg-[#0f172b] text-white font-semibold text-sm px-6 py-3.5 rounded-full hover:bg-[#1e293b] hover:scale-[1.02] active:scale-[0.98] transition-[background-color,transform,opacity] duration-200 disabled:opacity-50"
           >
             <Zap size={15} />
             {loading ? "Redirecting to Stripe..." : "Start winning — $9/mo"}
