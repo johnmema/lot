@@ -106,7 +106,7 @@ export default function OnboardingPage() {
 
         <button
           onClick={() => router.push("/sign-up")}
-          className="text-white/50 text-sm font-medium hover:text-white/70 transition-colors"
+          className="text-white/50 text-sm font-medium hover:text-white/70 transition-colors px-3 py-2"
         >
           Skip
         </button>
@@ -143,7 +143,7 @@ export default function OnboardingPage() {
                       onClick={() => toggleGenre(genre.id)}
                       className={`flex items-center gap-3 rounded-[14px] px-[17px] py-3.5 text-left transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] ${
                         selected
-                          ? "bg-white border border-white shadow-sm"
+                          ? "bg-white border-2 border-[#7a9dc2] shadow-sm"
                           : "bg-white/80 border border-white/60 hover:bg-white/90"
                       }`}
                     >
@@ -222,7 +222,7 @@ export default function OnboardingPage() {
                       onClick={() => setNotification(opt.id)}
                       className={`flex items-center gap-4 rounded-[14px] px-5 py-4 text-left transition-all duration-200 hover:scale-[1.01] active:scale-[0.99] ${
                         selected
-                          ? "bg-white border border-white shadow-sm"
+                          ? "bg-white border-2 border-[#7a9dc2] shadow-sm"
                           : "bg-white/80 border border-white/60 hover:bg-white/90"
                       }`}
                     >
