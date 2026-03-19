@@ -80,7 +80,7 @@ export default function PricingPage() {
         {/* Back */}
         <button
           onClick={() => router.back()}
-          className="w-full text-center text-[#90a1b9] text-xs mt-6 hover:text-[#62748e] transition-colors"
+          className="w-full text-center text-[#90a1b9] text-xs mt-6 hover:text-[#62748e] transition-colors py-3 block"
         >
           Go back
         </button>
