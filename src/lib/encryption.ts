@@ -7,12 +7,13 @@ const IV_LENGTH = 16
 function getKey(): Buffer {
   const key = process.env.ENCRYPTION_KEY
   if (!key) throw new Error("ENCRYPTION_KEY env var is not set")
-  if (key.length !== KEY_LENGTH) {
+  const keyBytes = Buffer.from(key)
+  if (keyBytes.byteLength !== KEY_LENGTH) {
     throw new Error(
-      `ENCRYPTION_KEY must be exactly ${KEY_LENGTH} characters, got ${key.length}`
+      `ENCRYPTION_KEY must be exactly ${KEY_LENGTH} bytes, got ${keyBytes.byteLength}`
     )
   }
-  return Buffer.from(key)
+  return keyBytes
 }
 
 export function encrypt(plaintext: string): string {
