@@ -82,7 +82,25 @@
 **Priority:** P2
 **Depends on:** Credentials test endpoint (shipping in activation loop plan)
 
+## Design
+
+### Set Clerk app name to "Playbill Picks"
+
+**What:** In Clerk Dashboard → Branding, change the application name from "My Application" to "Playbill Picks".
+
+**Why:** The sign-in/sign-up pages show "Sign in to My Application" — the Clerk default. Users see this immediately on their first login.
+
+**Context:** Not a code change — Clerk Dashboard setting only. Takes 2 minutes.
+
+**Effort:** XS
+**Priority:** P1
+**Depends on:** None
+
 ## Completed
+
+### Design review polish (feat/playbill-picks)
+**Completed:** 2026-03-19
+Replaced 3-column icon-in-circle feature grid with numbered list + product showcase card. Fixed footer/pricing/onboarding touch targets. Made onboarding selection state visible with accent border. Replaced `transition-all` with specific animated properties.
 
 ### Persist onboarding preferences
 **Completed:** v0.1.1.0 (2026-03-18)
