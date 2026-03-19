@@ -1,10 +1,9 @@
 "use client"
 
 import { Suspense, useEffect, useState } from "react"
-import { useSearchParams } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Show, UserButton, useUser } from "@clerk/nextjs"
 import {
-  Zap,
   Shield,
   Eye,
   EyeOff,
@@ -149,6 +148,7 @@ export default function DashboardPage() {
 }
 
 function DashboardContent() {
+  const router = useRouter()
   const searchParams = useSearchParams()
   const showCredentials = searchParams.get("setup") === "credentials"
   const [data, setData] = useState<DashboardData | null>(null)
@@ -192,6 +192,27 @@ function DashboardContent() {
   }, [credentialsSaved])
 
   const needsSubscription = data && (!data.subscription || data.subscription.status !== "ACTIVE")
+
+  // Redirect to pricing if no active subscription.
+  // If coming from Stripe success (?setup=credentials), retry a few times first
+  // to give the webhook time to fire before bouncing back.
+  useEffect(() => {
+    if (!needsSubscription) return
+    if (showCredentials) {
+      // Poll up to 5 times (5s) waiting for webhook to activate subscription
+      let attempts = 0
+      const interval = setInterval(() => {
+        attempts++
+        setCredentialsSaved((v) => !v) // triggers data refetch
+        if (attempts >= 5) {
+          clearInterval(interval)
+          router.push("/pricing")
+        }
+      }, 1000)
+      return () => clearInterval(interval)
+    }
+    router.push("/pricing")
+  }, [needsSubscription, showCredentials, router])
   const needsCredentials = data && !data.credentials.hasCredentials && !credentialsSaved
 
   if (fetchError) {
@@ -225,29 +246,6 @@ function DashboardContent() {
         </Show>
       </nav>
 
-      {/* Subscription gate */}
-      {needsSubscription && (
-        <div className="px-8 md:px-12 mb-6 relative z-10">
-          <div className="bg-white/90 backdrop-blur-sm border border-white/60 rounded-2xl p-6 max-w-lg flex items-start gap-4">
-            <div className="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center shrink-0">
-              <Zap size={18} className="text-amber-500" />
-            </div>
-            <div>
-              <h2 className="text-[#0f172b] font-bold text-base mb-1">Activate your subscription</h2>
-              <p className="text-[#90a1b9] text-sm mb-3">
-                Subscribe to start auto-entering lotteries every day.
-              </p>
-              <Link
-                href="/pricing"
-                className="inline-flex items-center gap-2 bg-[#0f172b] text-white font-semibold text-sm px-5 py-2.5 rounded-full hover:bg-[#1e293b] transition-colors"
-              >
-                <Zap size={14} />
-                Reactivate — $9/mo
-              </Link>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Credential setup overlay */}
       {(needsCredentials || showCredentials) && !credentialsSaved ? (

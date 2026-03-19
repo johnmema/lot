@@ -1,4 +1,4 @@
-import { auth } from "@clerk/nextjs/server"
+import { auth, currentUser } from "@clerk/nextjs/server"
 import { NextResponse } from "next/server"
 import { db } from "@/lib/db"
 
@@ -9,8 +9,13 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
-  const user = await db.user.findUnique({
+  const clerkUser = await currentUser()
+  const email = clerkUser?.emailAddresses[0]?.emailAddress ?? ""
+
+  const user = await db.user.upsert({
     where: { clerkId },
+    create: { clerkId, email },
+    update: {},
     include: {
       subscription: true,
       credential: true,
@@ -20,15 +25,6 @@ export async function GET() {
       },
     },
   })
-
-  if (!user) {
-    return NextResponse.json({
-      subscription: null,
-      credentials: { hasCredentials: false },
-      recentRuns: [],
-      stats: { totalEntries: 0, totalWins: 0, streak: 0 },
-    })
-  }
 
   // Calculate stats
   const totalRuns = await db.entryRun.count({ where: { userId: user.id } })
