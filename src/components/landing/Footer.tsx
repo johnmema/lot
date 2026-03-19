@@ -32,7 +32,7 @@ export function Footer() {
                   <li key={item}>
                     <Link
                       href="#"
-                      className="text-[#90a1b9] text-sm hover:text-white transition-colors"
+                      className="text-[#90a1b9] text-sm hover:text-white transition-colors block py-2"
                     >
                       {item}
                     </Link>
@@ -53,7 +53,7 @@ export function Footer() {
               <Link
                 key={social}
                 href="#"
-                className="text-[#62748e] text-xs hover:text-white transition-colors"
+                className="text-[#62748e] text-xs hover:text-white transition-colors block py-2"
               >
                 {social}
               </Link>
