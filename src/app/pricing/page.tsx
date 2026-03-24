@@ -1,8 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { Check, Zap } from "lucide-react"
+import { AlertTriangle, Check, Zap } from "lucide-react"
+import Link from "next/link"
 
 const FEATURES = [
   "Auto-enter every Broadway lottery daily",
@@ -15,7 +15,7 @@ const FEATURES = [
 
 export default function PricingPage() {
   const [loading, setLoading] = useState(false)
-  const router = useRouter()
+  const [error, setError] = useState("")
 
   async function handleSubscribe() {
     setLoading(true)
@@ -24,14 +24,18 @@ export default function PricingPage() {
       const data = await res.json()
       if (data.url) {
         window.location.href = data.url
+      } else {
+        setError("Something went wrong. Please try again.")
+        setLoading(false)
       }
     } catch {
+      setError("Something went wrong. Please try again.")
       setLoading(false)
     }
   }
 
   return (
-    <main className="min-h-screen bg-linear-to-b from-[#7a9dc2] via-[#96bdd8] to-[#c2d9e8] flex items-center justify-center px-6">
+    <main className="min-h-[calc(100vh-1.25rem)] md:min-h-[calc(100vh-2rem)] rounded-[28px] overflow-hidden bg-linear-to-b from-[#7a9dc2] via-[#96bdd8] to-[#c2d9e8] flex items-center justify-center px-6">
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-10">
@@ -45,7 +49,7 @@ export default function PricingPage() {
         </div>
 
         {/* Card */}
-        <div className="bg-white/90 backdrop-blur-sm border border-white/60 rounded-2xl p-8 shadow-sm animate-fade-in-up">
+        <div className="bg-white/90 backdrop-blur-sm border border-white/60 rounded-2xl p-8 shadow-sm">
           {/* Price */}
           <div className="flex items-baseline gap-1 mb-6">
             <span className="text-[#0f172b] font-extrabold text-5xl tracking-tight">$9</span>
@@ -61,6 +65,12 @@ export default function PricingPage() {
               </li>
             ))}
           </ul>
+
+          {error && (
+            <p className="text-red-500 text-xs flex items-center gap-1.5 mb-4">
+              <AlertTriangle size={12} /> {error}
+            </p>
+          )}
 
           {/* Subscribe button */}
           <button
@@ -78,12 +88,12 @@ export default function PricingPage() {
         </div>
 
         {/* Back */}
-        <button
-          onClick={() => router.back()}
+        <Link
+          href="/dashboard"
           className="w-full text-center text-[#90a1b9] text-xs mt-6 hover:text-[#62748e] transition-colors py-3 block"
         >
-          Go back
-        </button>
+          Back to dashboard
+        </Link>
       </div>
     </main>
   )

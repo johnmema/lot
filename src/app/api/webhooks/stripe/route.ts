@@ -60,7 +60,10 @@ export async function POST(req: Request) {
       if (subscriptionId) {
         await db.subscription.updateMany({
           where: { stripeSubscriptionId: subscriptionId },
-          data: { status: "ACTIVE" },
+          data: {
+            status: "ACTIVE",
+            currentPeriodEnd: new Date(invoice.period_end * 1000),
+          },
         })
       }
       break

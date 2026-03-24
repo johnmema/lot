@@ -30,17 +30,9 @@
 **Priority:** P1
 **Depends on:** None
 
-### Dashboard entry timeline — empty state polish
+### ~~Dashboard entry timeline — empty state polish~~
 
-**What:** When a user first signs up but the cron hasn't run yet, show a meaningful pending state: "Your first lottery entries are scheduled for tonight at midnight."
-
-**Why:** The 24-hour window between sign-up and first cron run is the highest churn risk. A blank timeline feels broken.
-
-**Context:** The entry history timeline (to be built in the activation loop plan) will be empty for new users. The empty state should display the next scheduled cron run time (from `vercel.json` schedule: "0 14 * * *" = 2pm UTC daily) and a count of active lotteries.
-
-**Effort:** XS
-**Priority:** P2
-**Depends on:** Entry history timeline UI
+**SUPERSEDED** by the unified activation flow. The setup wizard completion screen (step 4) and the dashboard's progressive empty state now show "First entries in Xh Ym" with a show list, replacing the need for a separate empty-state polish task.
 
 ### Dashboard stats: fix N+1 query pattern
 
@@ -96,6 +88,20 @@
 **Priority:** P1
 **Depends on:** None
 
+## Dashboard
+
+### Re-add credential management to dashboard
+
+**What:** Add a card or section to the dashboard that lets users view and update their rush.telecharge.com credentials (email + password) after initial setup.
+
+**Why:** The setup wizard collects credentials in step 2, but after setup completes there's no way to update them from the dashboard. If a user changes their Telecharge password, they're stuck — the cron will silently fail with bad credentials.
+
+**Context:** The old dashboard had a `CredentialCard` component (removed in the unified activation flow PR). The existing `GET/POST /api/credentials` and `POST /api/credentials/test` endpoints still work. Re-use the form pattern from the setup wizard's credential step, adding an "Edit credentials" option to the dashboard right column.
+
+**Effort:** S (human: ~3h / CC: ~15 min)
+**Priority:** P2
+**Depends on:** Unified activation flow (setup wizard)
+
 ## Completed
 
 ### Design review polish (feat/playbill-picks)
@@ -103,8 +109,9 @@
 Replaced 3-column icon-in-circle feature grid with numbered list + product showcase card. Fixed footer/pricing/onboarding touch targets. Made onboarding selection state visible with accent border. Replaced `transition-all` with specific animated properties.
 
 ### Persist onboarding preferences
-**Completed:** v0.1.1.0 (2026-03-18)
+**Completed:** v0.1.1.0 (2026-03-18) — **REVERSED** in unified activation flow
 Save genre selections, ticket count, and notification preferences via localStorage → POST /api/onboarding on dashboard mount. Schema: genres[], ticketCount, notificationPref added to User model. Cron filtering deferred to Show Watchlist.
+Reversed: Onboarding removed entirely. genres/ticketCount/notificationPref columns dropped from User model. Genre filtering superseded by Show Watchlist feature.
 
 ### Add test suite
 **Completed:** v0.1.1.0 (2026-03-18)

@@ -21,8 +21,8 @@ export async function POST() {
     metadata: {
       clerkUserId: userId,
     },
-    success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?setup=credentials`,
-    cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/pricing`,
+    success_url: `${process.env.NEXT_PUBLIC_APP_URL}/setup?step=4`,
+    cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/setup?step=3`,
   })
 
   return NextResponse.json({ url: session.url })

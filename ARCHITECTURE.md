@@ -20,14 +20,16 @@ src/
 │   ├── page.tsx                          # Landing page
 │   ├── layout.tsx                        # Root layout (ClerkProvider, fonts)
 │   ├── globals.css                       # Global styles + animations
-│   ├── onboarding/page.tsx               # 3-step onboarding (genres, tickets, notifications)
+│   ├── setup/page.tsx                    # 4-step setup wizard (explainer, credentials, subscribe, completion)
 │   ├── pricing/page.tsx                  # $9/mo pricing card → Stripe checkout
 │   ├── dashboard/page.tsx                # User dashboard (runs, stats, credentials)
 │   ├── sign-in/[[...sign-in]]/page.tsx   # Clerk sign-in
 │   ├── sign-up/[[...sign-up]]/page.tsx   # Clerk sign-up
 │   └── api/
 │       ├── checkout/route.ts             # POST: create Stripe checkout session
-│       ├── credentials/route.ts          # GET/POST: lottery credential management
+│       ├── credentials/
+│       │   ├── route.ts                  # GET/POST: lottery credential management
+│       │   └── test/route.ts             # POST: verify credentials via Notte API
 │       ├── dashboard/route.ts            # GET: aggregated dashboard data
 │       ├── cron/route.ts                 # GET: daily lottery entry job
 │       └── webhooks/stripe/route.ts      # POST: Stripe event handler
@@ -80,8 +82,12 @@ EntryRun
 ## User Flow
 
 ```
-Landing → Onboarding (3 steps) → Sign Up (Clerk)
-→ Pricing ($9/mo via Stripe) → Dashboard → Save Credentials
+Landing → Sign Up (Clerk) → Setup Wizard:
+  Step 1: "How Playbill Picks works" (explainer)
+  Step 2: "Connect your rush.telecharge.com account" (credentials + verify)
+  Step 3: "Subscribe to automate" → Stripe Checkout ($9/mo)
+  Step 4: "You're all set!" (completion + scheduled entries)
+→ Dashboard (progressive empty state → entries → history)
 → [Daily cron enters lotteries] → Dashboard shows results
 ```
 

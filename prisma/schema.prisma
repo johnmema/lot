@@ -11,10 +11,6 @@ model User {
   id               String   @id @default(cuid())
   clerkId          String   @unique
   email            String   @unique
-  // Onboarding preferences — saved for future filtering, not used by cron yet
-  genres           String[]
-  ticketCount      Int?
-  notificationPref String?
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 

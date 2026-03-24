@@ -59,7 +59,10 @@ export async function GET() {
 
   return NextResponse.json({
     subscription: user.subscription
-      ? { status: user.subscription.status }
+      ? {
+          status: user.subscription.status,
+          currentPeriodEnd: user.subscription.currentPeriodEnd?.toISOString() ?? null,
+        }
       : null,
     credentials: {
       hasCredentials: !!user.credential,

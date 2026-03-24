@@ -38,38 +38,41 @@ export function Navbar() {
   const [open, setOpen] = useState(false)
 
   return (
-    <nav className="relative z-50 animate-fade-in-up">
-      <div className="flex items-center justify-between px-6 md:px-10 h-[74px]">
-        {/* Logo */}
-        <Link href="/" className="text-white font-bold text-lg tracking-tight">
+    <nav className="relative z-50 flex justify-center pt-4 px-6 md:px-10">
+      <div className="flex items-center gap-6 bg-white/15 backdrop-blur-sm border border-white/20 rounded-full px-3 py-1.5">
+        {/* Logo inside pill */}
+        <Link href="/" className="text-white font-bold text-[15px] tracking-tight pl-3">
           Playbill Picks
         </Link>
 
-        {/* Desktop nav */}
-        <div className="hidden md:flex items-center gap-1 bg-white/15 border border-white/20 rounded-full px-2 py-1">
-          {["Shows", "Features", "About"].map((item) => (
-            <NavLink
-              key={item}
-              href={`#${item.toLowerCase()}`}
-              className="px-4 py-1.5 text-sm text-white/80 hover:text-white rounded-full hover:bg-white/10 transition-[background-color,transform,opacity] duration-200"
-            >
-              {item}
-            </NavLink>
-          ))}
+        {/* Desktop nav links */}
+        <div className="hidden md:flex items-center gap-0.5">
+          <NavLink
+            href="#testimonials"
+            className="px-4 py-1.5 text-sm text-white/70 hover:text-white rounded-full hover:bg-white/10 transition-[background-color,color] duration-200"
+          >
+            Testimonials
+          </NavLink>
+          <NavLink
+            href="#features"
+            className="px-4 py-1.5 text-sm text-white/70 hover:text-white rounded-full hover:bg-white/10 transition-[background-color,color] duration-200"
+          >
+            Q&A
+          </NavLink>
           <Link
             href="/pricing"
-            className="px-4 py-1.5 text-sm text-white/80 hover:text-white rounded-full hover:bg-white/10 transition-[background-color,transform,opacity] duration-200"
+            className="px-4 py-1.5 text-sm text-white/70 hover:text-white rounded-full hover:bg-white/10 transition-[background-color,color] duration-200"
           >
             Pricing
           </Link>
         </div>
 
-        {/* CTA / User actions */}
-        <div className="hidden md:flex items-center gap-3">
+        {/* CTA buttons */}
+        <div className="hidden md:flex items-center gap-2">
           <Show when="signed-in">
             <Link
               href="/dashboard"
-              className="bg-white text-[#0f172b] font-semibold text-sm px-5 py-2 rounded-full hover:bg-white/90 hover:scale-[1.03] active:scale-[0.98] transition-[background-color,transform,opacity] duration-200"
+              className="bg-white text-[#0f172b] font-medium text-sm px-5 py-2 rounded-full hover:bg-white/90 transition-[background-color] duration-200"
             >
               Dashboard
             </Link>
@@ -77,10 +80,16 @@ export function Navbar() {
           </Show>
           <Show when="signed-out">
             <Link
-              href="/onboarding"
-              className="bg-white text-[#0f172b] font-semibold text-sm px-5 py-2 rounded-full hover:bg-white/90 hover:scale-[1.03] active:scale-[0.98] transition-[background-color,transform,opacity] duration-200"
+              href="/sign-in"
+              className="text-white font-medium text-sm px-4 py-2 rounded-full border border-white/30 hover:bg-white/10 transition-[background-color] duration-200"
             >
-              Get started
+              Login
+            </Link>
+            <Link
+              href="/sign-up"
+              className="bg-white text-[#0f172b] font-medium text-sm px-5 py-2 rounded-full hover:bg-white/90 transition-[background-color] duration-200"
+            >
+              Start for Free
             </Link>
           </Show>
         </div>
@@ -97,23 +106,27 @@ export function Navbar() {
 
       {/* Mobile menu */}
       <div
-        className={`md:hidden absolute top-full left-0 right-0 bg-[#0f172b]/95 backdrop-blur-sm border-t border-white/10 px-6 flex flex-col gap-3 transition-all duration-300 overflow-hidden ${
+        className={`md:hidden absolute top-full left-4 right-4 mt-2 bg-white/95 backdrop-blur-md border border-white/20 rounded-2xl px-6 flex flex-col gap-3 transition-all duration-300 overflow-hidden ${
           open ? "py-4 max-h-80 opacity-100" : "py-0 max-h-0 opacity-0"
         }`}
       >
-        {["Shows", "Features", "About"].map((item) => (
-          <NavLink
-            key={item}
-            href={`#${item.toLowerCase()}`}
-            className="text-white/80 hover:text-white text-sm py-1 transition-colors"
-            onClick={() => setOpen(false)}
-          >
-            {item}
-          </NavLink>
-        ))}
+        <NavLink
+          href="#testimonials"
+          className="text-[#0f172b]/70 hover:text-[#0f172b] text-sm py-1 transition-colors"
+          onClick={() => setOpen(false)}
+        >
+          Testimonials
+        </NavLink>
+        <NavLink
+          href="#features"
+          className="text-[#0f172b]/70 hover:text-[#0f172b] text-sm py-1 transition-colors"
+          onClick={() => setOpen(false)}
+        >
+          Q&A
+        </NavLink>
         <Link
           href="/pricing"
-          className="text-white/80 hover:text-white text-sm py-1 transition-colors"
+          className="text-[#0f172b]/70 hover:text-[#0f172b] text-sm py-1 transition-colors"
           onClick={() => setOpen(false)}
         >
           Pricing
@@ -121,7 +134,7 @@ export function Navbar() {
         <Show when="signed-in">
           <Link
             href="/dashboard"
-            className="mt-2 bg-white text-[#0f172b] font-semibold text-sm px-5 py-2.5 rounded-full text-center hover:bg-white/90 transition-colors"
+            className="mt-2 bg-[#0f172b] text-white font-medium text-sm px-5 py-2.5 rounded-full text-center transition-colors"
             onClick={() => setOpen(false)}
           >
             Dashboard
@@ -129,11 +142,11 @@ export function Navbar() {
         </Show>
         <Show when="signed-out">
           <Link
-            href="/onboarding"
-            className="mt-2 bg-white text-[#0f172b] font-semibold text-sm px-5 py-2.5 rounded-full text-center hover:bg-white/90 transition-colors"
+            href="/sign-up"
+            className="mt-2 bg-[#0f172b] text-white font-medium text-sm px-5 py-2.5 rounded-full text-center transition-colors"
             onClick={() => setOpen(false)}
           >
-            Get started
+            Start for Free
           </Link>
         </Show>
       </div>
