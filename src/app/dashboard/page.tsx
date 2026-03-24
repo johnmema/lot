@@ -74,7 +74,7 @@ function DashboardContent() {
     return (
       <main className="min-h-[calc(100vh-1.25rem)] md:min-h-[calc(100vh-2rem)] rounded-[28px] overflow-hidden bg-linear-to-b from-[#7a9dc2] via-[#96bdd8] to-[#c2d9e8] flex items-center justify-center">
         <div className="bg-white/90 backdrop-blur-sm border border-white/60 rounded-2xl p-8 max-w-sm text-center">
-          <p className="text-[#1d293d] text-base font-semibold mb-2">Couldn&apos;t load your dashboard</p>
+          <p className="text-[#0f172b] text-base font-semibold mb-2">Couldn&apos;t load your dashboard</p>
           <p className="text-[#90a1b9] text-sm mb-4">Check your connection and try again.</p>
           <button
             onClick={() => { setFetchError(false); setRefreshKey((k) => k + 1) }}
@@ -122,21 +122,21 @@ function DashboardContent() {
                   <Ticket size={14} className="text-[#7a9dc2]" />
                   <span className="text-[#90a1b9] text-xs font-medium">Entries</span>
                 </div>
-                <p className="text-[#1d293d] text-2xl font-bold tabular-nums">{data.stats.totalEntries}</p>
+                <p className="text-[#0f172b] text-2xl font-bold tabular-nums">{data.stats.totalEntries}</p>
               </div>
               <div className="bg-white/90 backdrop-blur-sm border border-white/60 rounded-2xl px-4 py-4">
                 <div className="flex items-center gap-2 mb-2">
                   <TrendingUp size={14} className="text-[#7a9dc2]" />
                   <span className="text-[#90a1b9] text-xs font-medium">Wins</span>
                 </div>
-                <p className="text-[#1d293d] text-2xl font-bold tabular-nums">{data.stats.totalWins}</p>
+                <p className="text-[#0f172b] text-2xl font-bold tabular-nums">{data.stats.totalWins}</p>
               </div>
               <div className="bg-white/90 backdrop-blur-sm border border-white/60 rounded-2xl px-4 py-4">
                 <div className="flex items-center gap-2 mb-2">
                   <Flame size={14} className="text-[#7a9dc2]" />
                   <span className="text-[#90a1b9] text-xs font-medium">Streak</span>
                 </div>
-                <p className="text-[#1d293d] text-2xl font-bold tabular-nums">{data.stats.streak}<span className="text-sm font-medium text-[#90a1b9] ml-0.5">d</span></p>
+                <p className="text-[#0f172b] text-2xl font-bold tabular-nums">{data.stats.streak}<span className="text-sm font-medium text-[#90a1b9] ml-0.5">d</span></p>
               </div>
             </div>
           )}
@@ -173,7 +173,7 @@ function DashboardContent() {
                         run.status === "FAILED" ? "bg-red-400" : "bg-[#c2d0e0]"
                       }`} />
                       <div className="flex-1 min-w-0">
-                        <p className="text-[#1d293d] text-sm font-semibold leading-tight">{show}</p>
+                        <p className="text-[#0f172b] text-sm font-semibold leading-tight">{show}</p>
                         <p className="text-[#90a1b9] text-xs mt-0.5">
                           {new Date(run.runAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                         </p>
