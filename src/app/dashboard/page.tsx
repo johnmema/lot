@@ -78,7 +78,7 @@ function DashboardContent() {
           <p className="text-[#90a1b9] text-sm mb-4">Check your connection and try again.</p>
           <button
             onClick={() => { setFetchError(false); setRefreshKey((k) => k + 1) }}
-            className="bg-[#0f172b] text-white font-semibold text-sm px-5 py-3 rounded-full hover:bg-[#1e293b] transition-colors"
+            className="bg-[#0f172b] text-white font-semibold text-sm px-5 py-3 rounded-full hover:bg-[#1e293b] hover:scale-[1.02] active:scale-[0.98] transition-[background-color,transform] duration-200"
           >
             Retry
           </button>
