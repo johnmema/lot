@@ -36,17 +36,20 @@ export async function POST(req: Request) {
       const user = await db.user.findUnique({ where: { clerkId: clerkUserId } })
       if (!user) break
 
+      const customerId = typeof session.customer === "string" ? session.customer : session.customer.id
+      const subscriptionId = typeof session.subscription === "string" ? session.subscription : session.subscription.id
+
       await db.subscription.upsert({
         where: { userId: user.id },
         create: {
           userId: user.id,
-          stripeCustomerId: session.customer as string,
-          stripeSubscriptionId: session.subscription as string,
+          stripeCustomerId: customerId,
+          stripeSubscriptionId: subscriptionId,
           status: "ACTIVE",
         },
         update: {
-          stripeCustomerId: session.customer as string,
-          stripeSubscriptionId: session.subscription as string,
+          stripeCustomerId: customerId,
+          stripeSubscriptionId: subscriptionId,
           status: "ACTIVE",
         },
       })
