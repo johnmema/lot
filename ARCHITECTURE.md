@@ -10,6 +10,7 @@
 - **Payments:** Stripe (subscriptions + webhooks)
 - **Encryption:** AES-256-CBC for credential storage
 - **Cron:** Vercel Cron (daily at 9am ET)
+- **Email:** Resend (daily entry confirmation emails)
 - **External API:** anything.notte (lottery entry automation)
 
 ## Repo Structure
@@ -44,6 +45,7 @@ src/
 ├── lib/
 │   ├── db.ts                             # Prisma client singleton
 │   ├── encryption.ts                     # AES-256 encrypt/decrypt
+│   ├── resend.ts                         # Resend client singleton
 │   └── stripe.ts                         # Stripe client init
 └── proxy.ts                              # Clerk middleware
 
