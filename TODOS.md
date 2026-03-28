@@ -27,17 +27,10 @@ Resend integrated in cron. Sends "Entered N lotteries today" email after each su
 
 **SUPERSEDED** by the unified activation flow. The setup wizard completion screen (step 4) and the dashboard's progressive empty state now show "First entries in Xh Ym" with a show list, replacing the need for a separate empty-state polish task.
 
-### Dashboard stats: fix N+1 query pattern
+### ~~Dashboard stats: fix N+1 query pattern~~
 
-**What:** Consolidate the 3 separate DB queries in `GET /api/dashboard` (totalRuns count, totalShows findMany, streak findMany) into a single aggregated query or fewer round trips.
-
-**Why:** The `totalShows` query loads all historical `EntryRun` records to count entries. At 365 days × N users, this degrades linearly. Not a problem at beta scale, but worth fixing before launch.
-
-**Context:** `src/app/api/dashboard/route.ts`. The `totalEntries` count can be maintained as a running total on the User model (updated after each cron run), eliminating the full scan.
-
-**Effort:** S
-**Priority:** P2
-**Depends on:** None
+**Completed:** v0.1.2.0 (2026-03-28, feat/playbill-picks)
+Removed full-scan `findMany` for `totalShows`. Now uses a single `successRuns` query; `totalEntries` and `totalShows` (distinct set) derived from the same result. Streak deduplicates by UTC calendar day with today/yesterday edge case. Eliminated dead `totalRuns` count query.
 
 ## Shows
 
