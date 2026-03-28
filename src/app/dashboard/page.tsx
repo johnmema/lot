@@ -1,18 +1,22 @@
 "use client"
 
-import { Suspense, useEffect, useState } from "react"
+import { Suspense, useCallback, useEffect, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Show, UserButton, useUser } from "@clerk/nextjs"
 import {
   CheckCircle2,
-  Loader2,
   Clock,
-  Ticket,
-  TrendingUp,
+  Eye,
+  EyeOff,
+  ExternalLink,
   Flame,
+  Loader2,
+  Share2,
+  Star,
+  Ticket,
 } from "lucide-react"
 import Link from "next/link"
-import { SAMPLE_SHOWS, getNextRunLabel } from "@/lib/constants"
+import { SAMPLE_SHOWS } from "@/lib/constants"
 
 type EntryRun = {
   id: string
@@ -26,7 +30,7 @@ type DashboardData = {
   subscription: { status: string; currentPeriodEnd: string | null } | null
   credentials: { hasCredentials: boolean; lotteryEmail?: string }
   recentRuns: EntryRun[]
-  stats: { totalEntries: number; totalWins: number; streak: number }
+  stats: { totalEntries: number; totalShows: number; streak: number }
 }
 
 function formatDate() {
@@ -36,6 +40,41 @@ function formatDate() {
     month: "long",
     day: "numeric",
   })
+}
+
+function useCountdown() {
+  const [label, setLabel] = useState("")
+  const [isRunning, setIsRunning] = useState(false)
+
+  useEffect(() => {
+    function update() {
+      const now = new Date()
+      const next = new Date()
+      next.setUTCHours(14, 0, 0, 0)
+      if (now >= next) next.setUTCDate(next.getUTCDate() + 1)
+      const diffMs = next.getTime() - now.getTime()
+
+      if (diffMs <= 0) {
+        setLabel("Entries running now...")
+        setIsRunning(true)
+        return
+      }
+
+      setIsRunning(false)
+      const h = Math.floor(diffMs / (1000 * 60 * 60))
+      const m = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60))
+      const s = Math.floor((diffMs % (1000 * 60)) / 1000)
+      if (h > 0) setLabel(`${h}h ${m}m ${s}s`)
+      else if (m > 0) setLabel(`${m}m ${s}s`)
+      else setLabel(`${s}s`)
+    }
+
+    update()
+    const id = setInterval(update, 1000)
+    return () => clearInterval(id)
+  }, [])
+
+  return { label, isRunning }
 }
 
 export default function DashboardPage() {
@@ -52,9 +91,10 @@ function DashboardContent() {
   const [fetchError, setFetchError] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
   const { isLoaded, isSignedIn, user } = useUser()
+  const countdown = useCountdown()
+  const refreshTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  useEffect(() => {
-    if (!isLoaded || !isSignedIn) return
+  const fetchDashboard = useCallback(() => {
     setFetchError(false)
     fetch("/api/dashboard")
       .then((res) => { if (!res.ok) throw new Error(); return res.json() })
@@ -68,7 +108,25 @@ function DashboardContent() {
         setData(d)
       })
       .catch(() => { setFetchError(true) })
-  }, [refreshKey, isLoaded, isSignedIn, router])
+  }, [router])
+
+  useEffect(() => {
+    if (!isLoaded || !isSignedIn) return
+    fetchDashboard()
+  }, [refreshKey, isLoaded, isSignedIn, fetchDashboard])
+
+  // Double refresh: refetch at T+0 and T+5min after cron runs
+  useEffect(() => {
+    if (countdown.isRunning) {
+      fetchDashboard()
+      refreshTimeoutRef.current = setTimeout(() => {
+        fetchDashboard()
+      }, 5 * 60 * 1000)
+    }
+    return () => {
+      if (refreshTimeoutRef.current) clearTimeout(refreshTimeoutRef.current)
+    }
+  }, [countdown.isRunning, fetchDashboard])
 
   if (fetchError) {
     return (
@@ -126,10 +184,10 @@ function DashboardContent() {
               </div>
               <div className="bg-white/90 backdrop-blur-sm border border-white/60 rounded-2xl px-4 py-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <TrendingUp size={14} className="text-[#7a9dc2]" />
-                  <span className="text-[#90a1b9] text-xs font-medium">Wins</span>
+                  <Star size={14} className="text-[#7a9dc2]" />
+                  <span className="text-[#90a1b9] text-xs font-medium">Shows</span>
                 </div>
-                <p className="text-[#0f172b] text-2xl font-bold tabular-nums">{data.stats.totalWins}</p>
+                <p className="text-[#0f172b] text-2xl font-bold tabular-nums">{data.stats.totalShows}</p>
               </div>
               <div className="bg-white/90 backdrop-blur-sm border border-white/60 rounded-2xl px-4 py-4">
                 <div className="flex items-center gap-2 mb-2">
@@ -190,7 +248,7 @@ function DashboardContent() {
                 </div>
               </div>
             ) : (
-              /* Progressive empty state */
+              /* Progressive empty state with live countdown */
               <div className="bg-white/90 backdrop-blur-sm border border-white/60 rounded-2xl p-5 shadow-sm">
                 <div className="space-y-3 mb-5">
                   <div className="flex items-center gap-3">
@@ -203,8 +261,8 @@ function DashboardContent() {
                   </div>
                   <div className="flex items-center gap-3">
                     <Clock size={15} className="text-[#7a9dc2] shrink-0" />
-                    <span className="text-[#314158] text-sm font-medium">
-                      First entries in {getNextRunLabel()}
+                    <span className="text-[#314158] text-sm font-medium tabular-nums">
+                      {countdown.isRunning ? "Entries running now..." : `First entries in ${countdown.label}`}
                     </span>
                   </div>
                 </div>
@@ -225,8 +283,213 @@ function DashboardContent() {
               </div>
             )
           )}
+
+          {/* Share button */}
+          {data && <ShareButton />}
+
+          {/* Settings section */}
+          {data && (
+            <div className="mt-6 space-y-3">
+              <CredentialEditCard lotteryEmail={data.credentials.lotteryEmail} />
+              <BillingButton />
+            </div>
+          )}
         </div>
       </div>
     </main>
+  )
+}
+
+function ShareButton() {
+  const [copied, setCopied] = useState(false)
+
+  async function handleShare() {
+    const shareData = {
+      title: "Playbill Picks",
+      text: "I use this to auto-enter Broadway lotteries",
+      url: window.location.origin,
+    }
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData)
+        return
+      } catch {
+        // User cancelled or share failed — fall through to clipboard
+      }
+    }
+
+    await navigator.clipboard.writeText(shareData.url)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  return (
+    <button
+      onClick={handleShare}
+      className="mt-4 flex items-center gap-2 text-white/60 hover:text-white/90 text-sm font-medium py-2 transition-colors duration-200"
+    >
+      <Share2 size={14} />
+      {copied ? "Link copied!" : "Share Playbill Picks"}
+    </button>
+  )
+}
+
+function CredentialEditCard({ lotteryEmail }: { lotteryEmail?: string }) {
+  const [editing, setEditing] = useState(false)
+  const [email, setEmail] = useState(lotteryEmail ?? "")
+  const [password, setPassword] = useState("")
+  const [showPassword, setShowPassword] = useState(false)
+  const [status, setStatus] = useState<"idle" | "verifying" | "saving" | "success" | "error">("idle")
+  const [error, setError] = useState("")
+
+  async function handleSave(e: React.FormEvent) {
+    e.preventDefault()
+    setError("")
+    setStatus("verifying")
+
+    // Step 1: Verify credentials (stateless)
+    const testRes = await fetch("/api/credentials/test", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ lotteryEmail: email, lotteryPassword: password }),
+    })
+    const testData = await testRes.json().catch(() => ({}))
+
+    if (!testRes.ok || !testData.verified) {
+      setStatus("error")
+      if (testRes.status === 429) {
+        setError("Too many attempts. Wait 1 minute.")
+      } else {
+        setError(testData.message ?? "Incorrect email or password.")
+      }
+      return
+    }
+
+    // Step 2: Save only after verification
+    setStatus("saving")
+    const saveRes = await fetch("/api/credentials", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ lotteryEmail: email, lotteryPassword: password }),
+    })
+
+    if (!saveRes.ok) {
+      setStatus("error")
+      setError("Verified but failed to save. Try again.")
+      return
+    }
+
+    setStatus("success")
+    setPassword("")
+    setTimeout(() => { setEditing(false); setStatus("idle") }, 1500)
+  }
+
+  return (
+    <div className="bg-white/90 backdrop-blur-sm border border-white/60 rounded-2xl px-5 py-4 shadow-sm">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-[#314158] text-sm font-semibold">Lottery credentials</p>
+          <p className="text-[#90a1b9] text-xs mt-0.5">{lotteryEmail ?? "Not set"}</p>
+        </div>
+        {!editing && (
+          <button
+            onClick={() => setEditing(true)}
+            className="text-[#7a9dc2] text-xs font-semibold hover:text-[#5a7da2] py-2 transition-colors duration-200"
+          >
+            Edit
+          </button>
+        )}
+      </div>
+
+      {editing && (
+        <form onSubmit={handleSave} className="mt-4 space-y-3">
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="rush.telecharge.com email"
+            required
+            className="w-full bg-white border border-[#e2e8f0] rounded-xl px-4 py-2.5 text-base text-[#0f172b] placeholder:text-[#c2d0e0] focus:outline-none focus:ring-2 focus:ring-[#7a9dc2]/30 focus:border-[#7a9dc2]"
+          />
+          <div className="relative">
+            <input
+              type={showPassword ? "text" : "password"}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Password"
+              required
+              className="w-full bg-white border border-[#e2e8f0] rounded-xl px-4 py-2.5 pr-10 text-base text-[#0f172b] placeholder:text-[#c2d0e0] focus:outline-none focus:ring-2 focus:ring-[#7a9dc2]/30 focus:border-[#7a9dc2]"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#90a1b9] hover:text-[#314158] p-1"
+            >
+              {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
+            </button>
+          </div>
+
+          {error && <p className="text-red-500 text-xs">{error}</p>}
+          {status === "success" && <p className="text-emerald-600 text-xs">Credentials updated</p>}
+
+          <div className="flex gap-2">
+            <button
+              type="submit"
+              disabled={status === "verifying" || status === "saving"}
+              className="bg-[#0f172b] text-white font-semibold text-xs px-4 py-2.5 rounded-xl hover:bg-[#1e293b] hover:scale-[1.02] active:scale-[0.98] transition-[background-color,transform] duration-200 disabled:opacity-50"
+            >
+              {status === "verifying" ? "Verifying..." : status === "saving" ? "Saving..." : "Save & verify"}
+            </button>
+            <button
+              type="button"
+              onClick={() => { setEditing(false); setStatus("idle"); setError(""); setPassword("") }}
+              className="text-[#90a1b9] text-xs font-semibold px-4 py-2.5 hover:text-[#314158] transition-colors duration-200"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      )}
+    </div>
+  )
+}
+
+function BillingButton() {
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState("")
+
+  async function handleManageBilling() {
+    setLoading(true)
+    setError("")
+
+    try {
+      const res = await fetch("/api/billing-portal", { method: "POST" })
+      const data = await res.json()
+
+      if (res.ok && data.url) {
+        window.location.href = data.url
+      } else {
+        setError(data.error ?? "Couldn't open billing. Try again.")
+        setLoading(false)
+      }
+    } catch {
+      setError("Couldn't open billing. Try again.")
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div>
+      <button
+        onClick={handleManageBilling}
+        disabled={loading}
+        className="flex items-center gap-2 text-[#7a9dc2] hover:text-[#5a7da2] text-sm font-medium py-3 transition-colors duration-200 disabled:opacity-50"
+      >
+        <ExternalLink size={14} />
+        {loading ? "Opening..." : "Manage subscription"}
+      </button>
+      {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
+    </div>
   )
 }

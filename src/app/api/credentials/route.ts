@@ -1,4 +1,4 @@
-import { auth } from "@clerk/nextjs/server"
+import { auth, currentUser } from "@clerk/nextjs/server"
 import { NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { encrypt } from "@/lib/encryption"
@@ -21,7 +21,6 @@ export async function POST(req: Request) {
 
   if (!user) {
     // Auto-create user on first credential save
-    const { currentUser } = await import("@clerk/nextjs/server")
     const clerkUser = await currentUser()
     user = await db.user.create({
       data: {

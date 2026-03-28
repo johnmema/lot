@@ -25,8 +25,8 @@ import { SAMPLE_SHOWS, getNextRunLabel } from "@/lib/constants"
 const FEATURES = [
   "Auto-enter every Broadway lottery daily",
   "All shows — Broadway & Off-Broadway",
-  "Instant win notifications",
-  "Entry history & win statistics",
+  "Daily entry confirmations",
+  "Entry history & streak tracking",
   "AES-256 encrypted credentials",
   "Cancel anytime",
 ]
@@ -49,7 +49,7 @@ function ExplainerStep({ onContinue }: { onContinue: () => void }) {
     {
       icon: Bell,
       title: "You get notified",
-      description: "We'll let you know when you've been entered — and when you win.",
+      description: "You'll get a daily email confirming which lotteries we entered for you.",
     },
   ]
 
@@ -114,7 +114,26 @@ function CredentialStep({ onComplete }: { onComplete: () => void }) {
     setError("")
     setPhase("connecting")
 
-    // Step 1: Save credentials
+    // Step 1: Verify credentials first (stateless — sends creds in body)
+    setPhase("authenticating")
+    const testRes = await fetch("/api/credentials/test", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ lotteryEmail: email, lotteryPassword: password }),
+    })
+    const testData = await testRes.json().catch(() => ({}))
+
+    if (!testRes.ok || !testData.verified) {
+      setPhase("failed")
+      if (testRes.status === 429) {
+        setError("Too many attempts. Wait 1 minute.")
+      } else {
+        setError(testData.message ?? testData.error ?? "Incorrect email or password.")
+      }
+      return
+    }
+
+    // Step 2: Save credentials only after successful verification
     const saveRes = await fetch("/api/credentials", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -123,29 +142,12 @@ function CredentialStep({ onComplete }: { onComplete: () => void }) {
 
     if (!saveRes.ok) {
       setPhase("failed")
-      setError("Failed to save. Please try again.")
+      setError("Credentials verified but failed to save. Please try again.")
       return
     }
 
-    // Step 2: Verify credentials
-    setPhase("authenticating")
-    const testRes = await fetch("/api/credentials/test", { method: "POST" })
-    const testData = await testRes.json().catch(() => ({}))
-
-    if (testRes.ok && testData.verified) {
-      setPhase("verified")
-      setTimeout(() => onComplete(), 1200)
-      return
-    }
-
-    // Handle errors
-    setPhase("failed")
-
-    if (testRes.status === 429) {
-      setError("Too many attempts. Wait 1 minute.")
-    } else {
-      setError(testData.message ?? testData.error ?? "Incorrect email or password.")
-    }
+    setPhase("verified")
+    setTimeout(() => onComplete(), 1200)
   }
 
   const trustPoints = [
@@ -197,7 +199,7 @@ function CredentialStep({ onComplete }: { onComplete: () => void }) {
               onChange={(e) => setEmail(e.target.value)}
               required
               disabled={phase === "connecting" || phase === "authenticating" || phase === "verified"}
-              className="w-full border border-[#e2e8f0] rounded-xl px-4 py-2.5 text-sm text-[#0f172b] placeholder:text-[#90a1b9] focus:outline-none focus:ring-2 focus:ring-[#7a9dc2]/30 focus:border-[#7a9dc2] disabled:opacity-50"
+              className="w-full border border-[#e2e8f0] rounded-xl px-4 py-2.5 text-base text-[#0f172b] placeholder:text-[#90a1b9] focus:outline-none focus:ring-2 focus:ring-[#7a9dc2]/30 focus:border-[#7a9dc2] disabled:opacity-50"
               placeholder="you@email.com"
             />
           </div>
@@ -210,7 +212,7 @@ function CredentialStep({ onComplete }: { onComplete: () => void }) {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 disabled={phase === "connecting" || phase === "authenticating" || phase === "verified"}
-                className="w-full border border-[#e2e8f0] rounded-xl px-4 py-2.5 text-sm text-[#0f172b] placeholder:text-[#90a1b9] focus:outline-none focus:ring-2 focus:ring-[#7a9dc2]/30 focus:border-[#7a9dc2] pr-10 disabled:opacity-50"
+                className="w-full border border-[#e2e8f0] rounded-xl px-4 py-2.5 text-base text-[#0f172b] placeholder:text-[#90a1b9] focus:outline-none focus:ring-2 focus:ring-[#7a9dc2]/30 focus:border-[#7a9dc2] pr-10 disabled:opacity-50"
                 placeholder="••••••••"
               />
               <button

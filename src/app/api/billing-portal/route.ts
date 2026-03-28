@@ -19,10 +19,17 @@ export async function POST() {
     return NextResponse.json({ error: "No subscription found" }, { status: 404 })
   }
 
-  const session = await stripe.billingPortal.sessions.create({
-    customer: user.subscription.stripeCustomerId,
-    return_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`,
-  })
+  try {
+    const session = await stripe.billingPortal.sessions.create({
+      customer: user.subscription.stripeCustomerId,
+      return_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`,
+    })
 
-  return NextResponse.json({ url: session.url })
+    return NextResponse.json({ url: session.url })
+  } catch {
+    return NextResponse.json(
+      { error: "Could not open billing portal. Try again." },
+      { status: 502 }
+    )
+  }
 }
