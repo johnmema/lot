@@ -23,7 +23,7 @@ function checkRateLimit(userId: string): boolean {
   return true
 }
 
-export async function POST() {
+export async function POST(req: Request) {
   const { userId: clerkId } = await auth()
 
   if (!clerkId) {
@@ -37,20 +37,29 @@ export async function POST() {
     )
   }
 
-  const user = await db.user.findUnique({
-    where: { clerkId },
-    include: { credential: true },
-  })
+  // Accept credentials from request body (stateless verify-before-save)
+  // Falls back to reading from DB for re-testing saved credentials
+  const body = await req.json().catch(() => ({}))
+  let email = body.lotteryEmail
+  let password = body.lotteryPassword
 
-  if (!user?.credential) {
-    return NextResponse.json({ error: "No credentials saved" }, { status: 400 })
-  }
+  if (!email || !password) {
+    // Fallback: read saved credentials from DB
+    const user = await db.user.findUnique({
+      where: { clerkId },
+      include: { credential: true },
+    })
 
-  let password: string
-  try {
-    password = decrypt(user.credential.encryptedPassword)
-  } catch {
-    return NextResponse.json({ error: "Failed to decrypt credentials" }, { status: 500 })
+    if (!user?.credential) {
+      return NextResponse.json({ error: "No credentials provided or saved" }, { status: 400 })
+    }
+
+    email = user.credential.lotteryEmail
+    try {
+      password = decrypt(user.credential.encryptedPassword)
+    } catch {
+      return NextResponse.json({ error: "Failed to decrypt credentials" }, { status: 500 })
+    }
   }
 
   try {
@@ -61,7 +70,7 @@ export async function POST() {
         Authorization: `Bearer ${process.env.NOTTE_API_KEY}`,
       },
       body: JSON.stringify({
-        email: user.credential.lotteryEmail,
+        email,
         password,
         dry_run: true, // verify credentials only — do not enter any lotteries
       }),

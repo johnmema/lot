@@ -36,6 +36,7 @@ cp .env.local.example .env.local
 | `NOTTE_API_URL` | anything.notte API endpoint |
 | `NOTTE_API_KEY` | anything.notte API key |
 | `CRON_SECRET` | Secret for cron job auth (auto-set on Vercel) |
+| `RESEND_API_KEY` | Resend API key for entry confirmation emails |
 | `NEXT_PUBLIC_APP_URL` | Your app URL (`http://localhost:3000`) |
 
 Clerk runs in **keyless mode** by default — no API keys needed for local development. Temporary keys are auto-generated.
@@ -77,3 +78,4 @@ Push to Vercel. The cron job (`/api/cron`) runs daily at 9am ET automatically vi
 | `npm run build` | Production build |
 | `npm run start` | Start production server |
 | `npm run lint` | Run ESLint |
+| `npm run test` | Run Vitest tests |

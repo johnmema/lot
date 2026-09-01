@@ -18,41 +18,19 @@
 
 ## Activation Loop
 
-### Email notifications (entry summary)
+### ~~Email notifications (entry summary)~~
 
-**What:** Send a daily email to users after the cron runs: "We entered you in X lotteries today — Hamilton, Hadestown, Sweeney Todd."
+**Completed:** 2026-03-28 (feat/playbill-picks)
+Resend integrated in cron. Sends "Entered N lotteries today" email after each successful EntryRun. Idempotency-Key header: `{userId}-{utcDate}`. Skips when showsEntered.length === 0. Email errors caught inline and counted in response (`emailSent`, `emailFailed`) without failing the cron.
 
-**Why:** Without this, the product is invisible. Users have no confirmation that the automation is working, leading to churn during the silent window between sign-up and first cron run.
+### ~~Dashboard entry timeline — empty state polish~~
 
-**Context:** Skipped for MVP (no email provider set up). When ready, use Resend (3k free/month, Next.js-native). The cron already writes `EntryRun` with `showsEntered[]` — trigger the email after `db.entryRun.create`. Also update the onboarding notification preference copy if "Results only" still can't be supported.
+**SUPERSEDED** by the unified activation flow. The setup wizard completion screen (step 4) and the dashboard's progressive empty state now show "First entries in Xh Ym" with a show list, replacing the need for a separate empty-state polish task.
 
-**Effort:** S
-**Priority:** P1
-**Depends on:** None
+### ~~Dashboard stats: fix N+1 query pattern~~
 
-### Dashboard entry timeline — empty state polish
-
-**What:** When a user first signs up but the cron hasn't run yet, show a meaningful pending state: "Your first lottery entries are scheduled for tonight at midnight."
-
-**Why:** The 24-hour window between sign-up and first cron run is the highest churn risk. A blank timeline feels broken.
-
-**Context:** The entry history timeline (to be built in the activation loop plan) will be empty for new users. The empty state should display the next scheduled cron run time (from `vercel.json` schedule: "0 14 * * *" = 2pm UTC daily) and a count of active lotteries.
-
-**Effort:** XS
-**Priority:** P2
-**Depends on:** Entry history timeline UI
-
-### Dashboard stats: fix N+1 query pattern
-
-**What:** Consolidate the 3 separate DB queries in `GET /api/dashboard` (totalRuns count, totalShows findMany, streak findMany) into a single aggregated query or fewer round trips.
-
-**Why:** The `totalShows` query loads all historical `EntryRun` records to count entries. At 365 days × N users, this degrades linearly. Not a problem at beta scale, but worth fixing before launch.
-
-**Context:** `src/app/api/dashboard/route.ts`. The `totalEntries` count can be maintained as a running total on the User model (updated after each cron run), eliminating the full scan.
-
-**Effort:** S
-**Priority:** P2
-**Depends on:** None
+**Completed:** v0.1.2.0 (2026-03-28, feat/playbill-picks)
+Removed full-scan `findMany` for `totalShows`. Now uses a single `successRuns` query; `totalEntries` and `totalShows` (distinct set) derived from the same result. Streak deduplicates by UTC calendar day with today/yesterday edge case. Eliminated dead `totalRuns` count query.
 
 ## Shows
 
@@ -70,6 +48,54 @@
 
 ## Infrastructure
 
+### Add DB unique constraint for cron idempotency
+
+**What:** Add a `@@unique([userId, utcDate])` constraint (or equivalent) to the `EntryRun` model so the DB itself enforces one run per user per day, rather than relying on the application-level `findFirst` check.
+
+**Why:** The current check-then-insert in the cron has a race condition window: two concurrent cron invocations could both pass the check and create duplicate EntryRuns. A DB constraint makes it impossible at the data layer.
+
+**Context:** `prisma/schema.prisma`. Add a `utcDate String` computed column (YYYY-MM-DD from `runAt`) and `@@unique([userId, utcDate])`. Requires a Prisma migration. The application-level `findFirst` guard can remain as a cheap early exit that avoids the Notte API call; the DB constraint is the safety net.
+
+**Effort:** S (human: ~2h / CC: ~10 min)
+**Priority:** P2
+**Depends on:** None
+
+### Cron failure notification email
+
+**What:** Send an alert email to the admin (or the affected user) when a cron run fails for a user — i.e., `EntryRun` is created with `status: "FAILED"`.
+
+**Why:** Currently, cron failures are silent. A user's credentials could expire or the Notte API could go down, and nobody knows. Users would just stop getting entries with no explanation.
+
+**Context:** Can reuse the Resend client already integrated in `src/app/api/cron/route.ts`. On failure, send to admin address (env var `ADMIN_EMAIL`) with userId, error message, and timestamp. Consider rate-limiting to one alert per user per day to avoid alert storms.
+
+**Effort:** S (human: ~2h / CC: ~10 min)
+**Priority:** P1
+**Depends on:** Resend integration (completed 2026-03-28)
+
+### Post-launch monitoring checklist
+
+**What:** Set up the minimum viable observability stack for launch: Vercel Analytics, error alerting, and a weekly cron health digest.
+
+**Why:** Without monitoring, the first sign of a production problem is an angry user. The cron runs silently — we need to know it's running and succeeding before users ask.
+
+**Context:** Three pieces: (1) Enable Vercel Analytics for page views / Web Vitals. (2) Add Sentry or similar for uncaught exceptions in API routes — especially the cron and webhook handlers. (3) Weekly digest: sum of `emailSent`, `emailFailed`, `success`, `failed` from cron logs, emailed to admin. The cron response already returns these counts; just need to persist and aggregate.
+
+**Effort:** M (human: ~1 day / CC: ~30 min)
+**Priority:** P1
+**Depends on:** None
+
+### Canceled subscription UX
+
+**What:** When a user's subscription is canceled (webhook fires `customer.subscription.deleted`), show them a clear message on the dashboard explaining what happens next and offering a way to resubscribe.
+
+**Why:** Currently, cancellation silently deactivates the account. Users land on the dashboard, see no entries, and have no path back. This is a retention failure — a clear "Your subscription ended. Resubscribe to continue." with a one-click resubscribe button recovers some of those users.
+
+**Context:** `src/app/dashboard/page.tsx`. The dashboard API at `/api/dashboard` can check `subscription.status !== "ACTIVE"` and return a flag. If `subscriptionCanceled: true`, show a full-bleed banner or modal with resubscribe CTA pointing to `/pricing`. The `/api/billing-portal` route already handles Stripe portal sessions for active customers.
+
+**Effort:** S (human: ~3h / CC: ~15 min)
+**Priority:** P2
+**Depends on:** None
+
 ### Redis rate limiting for credentials test endpoint
 
 **What:** Replace the in-memory Map rate limit on POST /api/credentials/test with Upstash Redis, which persists across Vercel function instances.
@@ -82,11 +108,37 @@
 **Priority:** P2
 **Depends on:** Credentials test endpoint (shipping in activation loop plan)
 
+## Design
+
+### Set Clerk app name to "Playbill Picks"
+
+**What:** In Clerk Dashboard → Branding, change the application name from "My Application" to "Playbill Picks".
+
+**Why:** The sign-in/sign-up pages show "Sign in to My Application" — the Clerk default. Users see this immediately on their first login.
+
+**Context:** Not a code change — Clerk Dashboard setting only. Takes 2 minutes.
+
+**Effort:** XS
+**Priority:** P1
+**Depends on:** None
+
+## Dashboard
+
+### ~~Re-add credential management to dashboard~~
+
+**Completed:** 2026-03-28 (feat/playbill-picks)
+Added `CredentialEditCard` component to dashboard. Shows current email, expand to edit form with show/hide toggle, verify-then-save flow using stateless `/api/credentials/test` endpoint.
+
 ## Completed
 
+### Design review polish (feat/playbill-picks)
+**Completed:** 2026-03-19
+Replaced 3-column icon-in-circle feature grid with numbered list + product showcase card. Fixed footer/pricing/onboarding touch targets. Made onboarding selection state visible with accent border. Replaced `transition-all` with specific animated properties.
+
 ### Persist onboarding preferences
-**Completed:** v0.1.1.0 (2026-03-18)
+**Completed:** v0.1.1.0 (2026-03-18) — **REVERSED** in unified activation flow
 Save genre selections, ticket count, and notification preferences via localStorage → POST /api/onboarding on dashboard mount. Schema: genres[], ticketCount, notificationPref added to User model. Cron filtering deferred to Show Watchlist.
+Reversed: Onboarding removed entirely. genres/ticketCount/notificationPref columns dropped from User model. Genre filtering superseded by Show Watchlist feature.
 
 ### Add test suite
 **Completed:** v0.1.1.0 (2026-03-18)

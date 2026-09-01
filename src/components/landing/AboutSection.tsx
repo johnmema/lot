@@ -62,7 +62,7 @@ export function AboutSection() {
 
         {/* CTA */}
         <Link
-          href="/onboarding"
+          href="/sign-up"
           className="inline-flex items-center gap-2 bg-[#0f172b] text-white font-semibold text-sm px-6 py-3 rounded-full hover:bg-[#1e293b] transition-colors"
         >
           <Ticket size={14} />

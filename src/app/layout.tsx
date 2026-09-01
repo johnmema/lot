@@ -1,11 +1,18 @@
 import type { Metadata } from "next"
-import { Geist } from "next/font/google"
+import localFont from "next/font/local"
 import { ClerkProvider } from "@clerk/nextjs"
 import "./globals.css"
 
-const geist = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+const sfPro = localFont({
+  src: [
+    { path: "../fonts/SF-Pro-Display-Regular.woff2", weight: "400", style: "normal" },
+    { path: "../fonts/SF-Pro-Display-Medium.woff2", weight: "500", style: "normal" },
+    { path: "../fonts/SF-Pro-Display-Semibold.woff2", weight: "600", style: "normal" },
+    { path: "../fonts/SF-Pro-Display-Bold.woff2", weight: "700", style: "normal" },
+    { path: "../fonts/SF-Pro-Display-Black.woff2", weight: "900", style: "normal" },
+  ],
+  variable: "--font-sf-pro",
+  display: "swap",
 })
 
 export const metadata: Metadata = {
@@ -21,7 +28,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geist.variable} antialiased`}>
+      <body className={`${sfPro.variable} antialiased bg-white p-2.5 md:p-4`}>
         <ClerkProvider>
           {children}
         </ClerkProvider>

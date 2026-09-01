@@ -73,7 +73,7 @@ export function ShowsSection() {
             </p>
           </div>
           <Link
-            href="/onboarding"
+            href="/sign-up"
             className="flex items-center gap-2 bg-[#0f172b] text-white font-semibold text-sm px-5 py-2.5 rounded-full hover:bg-[#1e293b] hover:scale-[1.03] active:scale-[0.98] transition-all duration-200 shrink-0 self-start md:self-auto"
           >
             Enter all lotteries
